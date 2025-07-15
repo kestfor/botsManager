@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from bot.config import load_config
 from bot.handlers import router
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 async def main():
