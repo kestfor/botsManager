@@ -94,7 +94,7 @@ async def service_menu(callback: types.CallbackQuery, callback_data: ServiceCB):
             pretty = parse_docker_ps(raw)
             await callback.message.edit_text(
                 (
-                    f"Action <b>{act}</b> executed for <b>{svc}</b>:\n{output}\n\n"
+                    f"Action <b>{act}</b> executed for <b>{svc}</b>:\n\n"
                     f"📦 Текущий статус:\n{pretty}"
                 ),
                 parse_mode=ParseMode.HTML,

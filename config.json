@@ -4,6 +4,11 @@
       "name": "MemesBot",
       "path": "/root/MemesBot",
       "compose_file": "docker-compose.yml"
+    },
+    {
+      "name": "Cobalt",
+      "path": "/root/VideoDownloaderBot",
+      "compose_file": "docker-compose.yml"
     }
   ],
   "bot_token": "7220393429:AAF3t3ikuNtErawtPqC6nHc8W938v2k6m9k"
