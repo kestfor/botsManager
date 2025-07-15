@@ -7,6 +7,7 @@ from aiogram.filters.callback_data import CallbackData
 
 from bot.config import load_config
 from bot.controller import ServiceController
+from bot.utils import parse_docker_ps
 
 router = Router()
 config = load_config(config_path="../config.json")
@@ -71,16 +72,16 @@ async def service_menu(callback: types.CallbackQuery, callback_data: ServiceCB):
     act = callback_data.action
 
     if act == "menu":
-        status = controller.status(svc)
+        raw = controller.status(svc)
+        pretty = parse_docker_ps(raw)
         await callback.message.edit_text(
-            f"Service <b>{svc}</b> status:\n<pre>{status}</pre>",
+            f"📦 Статус сервиса <b>{svc}</b>:\n{pretty}",
             parse_mode=ParseMode.HTML,
             reply_markup=build_service_keyboard(svc)
         )
 
     elif act in ("start", "stop", "restart"):
         try:
-            # perform action
             if act == "start":
                 output = controller.start(svc)
             elif act == "stop":
@@ -88,12 +89,12 @@ async def service_menu(callback: types.CallbackQuery, callback_data: ServiceCB):
             else:
                 output = controller.restart(svc)
 
-            status = controller.status(svc)
+            raw = controller.status(svc)
+            pretty = parse_docker_ps(raw)
             await callback.message.edit_text(
                 (
-                    f"Action <b>{act}</b> executed for <b>{svc}</b>:\n"
-                    f"<pre>{output}</pre>\n\n"
-                    f"Current status:\n<pre>{status}</pre>"
+                    f"Action <b>{act}</b> executed for <b>{svc}</b>:\n{output}\n\n"
+                    f"📦 Текущий статус:\n{pretty}"
                 ),
                 parse_mode=ParseMode.HTML,
                 reply_markup=build_service_keyboard(svc)
@@ -108,7 +109,6 @@ async def service_menu(callback: types.CallbackQuery, callback_data: ServiceCB):
             return
 
     elif act == "back":
-        # back to main menu
         await callback.message.edit_text(
             "Select a service:",
             reply_markup=build_main_keyboard()
@@ -117,7 +117,7 @@ async def service_menu(callback: types.CallbackQuery, callback_data: ServiceCB):
     await callback.answer()
 
 
-# Fallback text commands (optional)
+# Fallback text commands
 def parse_command_arg(message: types.Message) -> str | None:
     parts = message.text.strip().split()
     return parts[1] if len(parts) > 1 else None
@@ -128,9 +128,10 @@ async def cmd_status_text(message: types.Message):
     name = parse_command_arg(message)
     if not name:
         return await message.reply("Usage: /status <service>")
-    output = controller.status(name)
+    raw = controller.status(name)
+    pretty = parse_docker_ps(raw)
     await message.answer(
-        f"Status of <b>{name}</b>:\n<pre>{output}</pre>",
+        f"📦 Статус <b>{name}</b>:\n{pretty}",
         parse_mode=ParseMode.HTML
     )
 
@@ -142,7 +143,7 @@ async def cmd_start_text(message: types.Message):
         return await message.reply("Usage: /start <service>")
     output = controller.start(name)
     await message.answer(
-        f"Started <b>{name}</b>:\n<pre>{output}</pre>",
+        f"✅ <b>{name}</b> запущен.\n{output}",
         parse_mode=ParseMode.HTML
     )
 
@@ -154,7 +155,7 @@ async def cmd_stop_text(message: types.Message):
         return await message.reply("Usage: /stop <service>")
     output = controller.stop(name)
     await message.answer(
-        f"Stopped <b>{name}</b>:\n<pre>{output}</pre>",
+        f"❌ <b>{name}</b> остановлен.\n{output}",
         parse_mode=ParseMode.HTML
     )
 
@@ -166,6 +167,6 @@ async def cmd_restart_text(message: types.Message):
         return await message.reply("Usage: /restart <service>")
     output = controller.restart(name)
     await message.answer(
-        f"Restarted <b>{name}</b>:\n<pre>{output}</pre>",
+        f"🔄 <b>{name}</b> перезапущен.\n{output}",
         parse_mode=ParseMode.HTML
     )
