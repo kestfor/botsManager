@@ -4,18 +4,12 @@ import re
 
 def parse_docker_ps(output: str) -> str:
     lines = output.strip().splitlines()
-    logging.debug(f"lines: {lines}")
-    if not lines:
+    if not lines or len(lines) < 2:
         return "ℹ️ Нет запущенных сервисов."
 
+    # Разбиваем заголовок и строки по 2+ пробелам
     header = lines[0]
-    splits = [m.start() for m in re.finditer(r'\s{2,}', header)]
-    cols = []
-    last = 0
-    for idx in splits + [len(header)]:
-        cols.append((last, idx))
-        last = idx
-    names = [header[a:b].strip() for a, b in cols]
+    names = re.split(r"\s{2,}", header)
 
     emoji_map = {
         'Up': '✅',
@@ -24,25 +18,27 @@ def parse_docker_ps(output: str) -> str:
     }
 
     result = []
+    # Обрабатываем каждую строку-ресурс
     for line in lines[1:]:
-        fields = [line[a:b].strip() for a, b in cols]
+        fields = re.split(r"\s{2,}", line)
+        # дополняем, если полей меньше
+        if len(fields) < len(names):
+            fields += [''] * (len(names) - len(fields))
         info = dict(zip(names, fields))
-        state = info.get('State', info.get('STATUS', ''))
+
+        state = info.get('STATUS') or info.get('State', '')
         em = 'ℹ️'
         for key, icon in emoji_map.items():
             if state.startswith(key):
                 em = icon
                 break
 
-        name = info.get('Name', info.get('CONTAINER', '—'))
-        ports = info.get('Ports', '')
+        name = info.get('NAME') or info.get('Name', '')
+        ports = info.get('PORTS', '')
 
-        block = (
-            f"{em} <b>{name}</b>\n"
-            f"• <i>State:</i> {state}\n"
-        )
+        block = [f"{em} <b>{name}</b>", f"• <i>State:</i> {state}"]
         if ports:
-            block += f"• <i>Ports:</i> {ports}\n"
-        result.append(block)
+            block.append(f"• <i>Ports:</i> {ports}")
+        result.append("\n".join(block))
 
-    return "\n".join(result)
+    return "\n\n".join(result)

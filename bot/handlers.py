@@ -22,13 +22,14 @@ class ServiceCB(CallbackData, prefix="svc"):
 
 # Helper to build main menu keyboard
 def build_main_keyboard() -> InlineKeyboardMarkup:
-    buttons = [
-        [InlineKeyboardButton(
-            text=svc,
-            callback_data=ServiceCB(service=svc, action="menu").pack()
-        )]
-        for svc in controller.list_services()
-    ]
+    buttons = []
+    for svc in controller.list_services():
+        buttons.append([
+            InlineKeyboardButton(
+                text=svc,
+                callback_data=ServiceCB(service=svc, action="menu").pack()
+            )
+        ])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
