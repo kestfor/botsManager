@@ -1,8 +1,8 @@
 {
   "services": [
     {
-      "name": "botsManager",
-      "path": "/mnt/c/Users/anzhi/PycharmProjects/botsManager",
+      "name": "MemesBot",
+      "path": "/root/MemesBot",
       "compose_file": "docker-compose.yml"
     }
   ],
